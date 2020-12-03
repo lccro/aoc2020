@@ -2,5 +2,11 @@
 
 This year I'm sharpening my Haskell axe...
 
+### Project Structure
 
-[Problem Set](https://adventofcode.com/2020)
+`src/Lib.hs` - For my solutions
+`test/LibSpec.hs` - For unit/regression tests
+
+
+### Links
+  * [Problem Set](https://adventofcode.com/2020)
