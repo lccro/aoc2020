@@ -40,29 +40,29 @@ d02_2 = length . filter correct . map words . lines <$> readFile "src/02-1.txt"
 
 ------------------------------------------------------------------------ 03 --
 d03_1 :: IO Int
-d03_1 = foldr go 0 . zip [3,6..] . tail . (map . map) xo . lines <$> readFile "src/03-1.txt"
-  where
-    xo '#' = 1
-    xo _ = 0
-    go (ndx, lst) acc = acc + (lst !! (ndx `rem` (length lst)))
+d03_1 =
+  let xo '#' = 1
+      xo _ = 0
+      go (ndx, lst) acc = acc + (lst !! (ndx `rem` (length lst)))
+      p1 = foldr go 0 . zip [3, 6 ..] . tail
+   in p1 . (map . map) xo . lines <$> readFile "src/03-1.txt"
 
 d03_2 :: IO Int
-d03_2 = p2 . (map . map) xo . lines <$> readFile "src/03-1.txt"
-  where
-    xo '#' = 1
-    xo _ = 0
-
-    p2 lst = product [
-      (foldr go 0 . zip [1,2..] $ t),
-      (foldr go 0 . zip [3,6..] $ t),
-      (foldr go 0 . zip [5,10..] $ t),
-      (foldr go 0 . zip [7,14..] $ t),
-      (foldr go 0 . zip [1,2..] $ tt . tail $ lst)
-      ]
-      where t = tail lst
-            tt (_:y:xs) = y : tt xs
-            tt _ = []
-    go (ndx, lst) acc = acc + (lst !! (ndx `rem` (length lst)))
+d03_2 =
+  let xo '#' = 1
+      xo _ = 0
+      go (ndx, lst) acc = acc + (lst !! (ndx `rem` (length lst)))
+      every2 (_ : y : xs) = y : every2 xs
+      every2 _ = []
+      p2 lst =
+        product
+          [ (foldr go 0 . zip [1, 2 ..] . tail $ lst),
+            (foldr go 0 . zip [3, 6 ..] . tail $ lst),
+            (foldr go 0 . zip [5, 10 ..] . tail $ lst),
+            (foldr go 0 . zip [7, 14 ..] . tail $ lst),
+            (foldr go 0 . zip [1, 2 ..] . every2 . tail $ lst)
+          ]
+   in p2 . (map . map) xo . lines <$> readFile "src/03-1.txt"
 
 someFunc :: IO ()
 someFunc = fmap show d03_2 >>= putStrLn
