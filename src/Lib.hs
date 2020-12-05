@@ -1,7 +1,8 @@
 module Lib where
 
+import Data.List
 import Data.List.Split
-import Debug.Trace
+-- import Debug.Trace
 
 ------------------------------------------------------------------------ 01 --
 d01_1 :: IO Int
@@ -64,5 +65,22 @@ d03_2 =
           ]
    in p2 . (map . map) xo . lines <$> readFile "src/03-1.txt"
 
+------------------------------------------------------------------------ 04 --
+d04_1 :: IO Int
+d04_1 =
+  let nl "" = "\n"
+      nl x = x
+   in length
+        . filter ((== 7) . length)
+        . map (filter (not . isPrefixOf "cid") . words)
+        . lines
+        . unwords
+        . map nl
+        . lines
+        <$> readFile "src/04-1.txt"
+
+d04_2 :: IO Int
+d04_2 = return 42
+
 someFunc :: IO ()
-someFunc = fmap show d03_2 >>= putStrLn
+someFunc = fmap show d04_2 >>= putStrLn
