@@ -23,3 +23,7 @@ spec = do
       d04_1 `shouldReturn` 216
       d04_2 `shouldReturn` 150
 
+    it "day 05" $ do
+      d05_1 `shouldReturn` 892
+      d05_2 `shouldReturn` 625
+

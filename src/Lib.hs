@@ -108,8 +108,40 @@ d04_2 =
 
 ------------------------------------------------------------------------ 05 --
 d05_1 :: IO Int
-d05_1 = return 5
+d05_1 =
+  let -- row x y | trace (show x ++ " / " ++ show y) False = undefined
+      step a d
+        | d `elem` "FL" = take (length a `div` 2) a
+        | otherwise = drop (length a `div` 2) a
+
+      row = head . foldl step [0 .. 127]
+      col = head . foldl step [0 .. 7]
+
+      calcID (r, c) = row r * 8 + col c
+   in maximum
+        . map (calcID . span (`elem` "FB"))
+        . lines
+        <$> readFile "src/05-1.txt"
+
+d05_2 :: IO Int
+d05_2 =
+  let -- step x y | trace (show x ++ " / " ++ show y) False = undefined
+      step a d
+        | d `elem` "FL" = take (length a `div` 2) a
+        | otherwise = drop (length a `div` 2) a
+
+      row = head . foldl step [0 .. 127]
+      col = head . foldl step [0 .. 7]
+
+      calcID (r, c) = row r * 8 + col c
+
+      mySeat lst = foldr (\(e1,e2) a -> if e1-e2 /= -1 then e1+1 else a) 0 $ zip lst (tail lst)
+   in mySeat
+        . sort
+        . map (calcID . span (`elem` "FB"))
+        . lines
+        <$> readFile "src/05-1.txt"
 
 someFunc :: IO ()
-someFunc = d05_1 >>= print
+someFunc = d05_2 >>= print
 
