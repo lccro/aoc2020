@@ -1,5 +1,6 @@
 module Lib where
 
+import Data.Char
 import Data.List
 import Data.List.Split
 -- import Debug.Trace
@@ -80,7 +81,35 @@ d04_1 =
         <$> readFile "src/04-1.txt"
 
 d04_2 :: IO Int
-d04_2 = return 42
+d04_2 =
+  let nl "" = "\n"
+      nl x = x
+      valid = all (fieldP . splitOn ":")
+        where
+          fieldP ("byr" : v : _) = read v `elem` [1920 .. 2002]
+          fieldP ("iyr" : v : _) = read v `elem` [2010 .. 2020]
+          fieldP ("eyr" : v : _) = read v `elem` [2020 .. 2030]
+          fieldP ("hgt" : v : _) = case span isDigit v of
+            (d, "cm") -> read d `elem` [150 .. 193]
+            (d, "in") -> read d `elem` [59 .. 76]
+            _ -> False
+          fieldP ("hcl" : v : _) = (length v == 7) && isPrefixOf "#" v
+          fieldP ("ecl" : v : _) = v `elem` ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"]
+          fieldP ("pid" : v : _) = (length v == 9) && all isDigit v
+   in length
+        . filter valid
+        . filter ((== 7) . length)
+        . map (filter (not . isPrefixOf "cid") . words)
+        . lines
+        . unwords
+        . map nl
+        . lines
+        <$> readFile "src/04-1.txt"
+
+------------------------------------------------------------------------ 05 --
+d05_1 :: IO Int
+d05_1 = return 5
 
 someFunc :: IO ()
-someFunc = d04_2 >>= print
+someFunc = d05_1 >>= print
+

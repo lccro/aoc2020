@@ -21,4 +21,5 @@ spec = do
 
     it "day 04" $ do
       d04_1 `shouldReturn` 216
-      d04_2 `shouldReturn` 0
+      d04_2 `shouldReturn` 150
+
