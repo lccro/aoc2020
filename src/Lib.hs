@@ -154,12 +154,12 @@ d06_1 =
    in sum . map (S.size . S.fromList) . lines . concatMap nl . lines <$> readFile "src/06-1.txt"
 
 d06_2 :: IO Int
-d06_2 = return 6542
-  -- [["abc"],["a","b","c"],["ab","ac"],["a","a","a","a"],["b"]]
-  --     3          0            1              1           1
-  -- let score :: [String] -> Int
-  --     score lst = foldl (\a s -> a + sum . map (\c -> sum . map (fromEnum . elem c) $ lst) $ s) 0 lst
-  -- in sum . map (score . words) . splitOn "  " . unwords . lines <$> readFile "src/06-1.txt"
+d06_2 =
+  sum . concatMap ((\l -> nub . map (sum . map (fromEnum . (\c -> all (elem c) l))) $ l) . words)
+    . splitOn "  "
+    . unwords
+    . lines
+    <$> readFile "src/06-1.txt"
 
 someFunc :: IO ()
 someFunc = d06_2 >>= print
