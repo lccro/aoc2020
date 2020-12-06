@@ -146,23 +146,17 @@ d05_2 =
         <$> readFile "src/05-1.txt"
 
 ------------------------------------------------------------------------ 06 --
-d06_1 :: IO Int
-d06_1 =
-  let nl "" = "\n"
-      nl x = x
-   in sum . map (length . nub) . lines . concatMap nl . lines <$> readFile "src/06-1.txt"
+d06_1 = sum . map (length . foldl1 union . lines) . splitOn "\n\n" <$> readFile "src/06-1.txt"
+d06_2 = sum . map (length . foldl1 intersect . lines) . splitOn "\n\n" <$> readFile "src/06-1.txt"
 
-d06_2 :: IO Int
-d06_2 =
-  let countCharInStrings c = fromEnum . all (elem c)
-  in sum
-    . concatMap ((\l -> nub . map (sum . map (`countCharInStrings` l)) $ l) . words)
-    . splitOn "  "
-    . unwords
-    . lines
-    <$> readFile "src/06-1.txt"
+------------------------------------------------------------------------ 07 --
+d07_1 :: IO Int
+d07_1 = return 7
+
+d07_2 :: IO Int
+d07_2 = return 7
 
 someFunc :: IO ()
-someFunc = d06_2 >>= print
+someFunc = d07_1 >>= print
 
 
