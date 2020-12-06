@@ -135,8 +135,11 @@ d05_2 =
 
       calcID (r, c) = row r * 8 + col c
 
-      mySeat lst = foldr (\(e1,e2) a -> if e1-e2 /= -1 then e1+1 else a) 0 $ zip lst (tail lst)
-   in mySeat
+      pairs = zip <*> tail
+   in (+1) . fst
+        . head
+        . filter (\(e1,e2) -> e1-e2 /= -1)
+        . pairs
         . sort
         . map (calcID . span (`elem` "FB"))
         . lines
