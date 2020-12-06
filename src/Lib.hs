@@ -3,7 +3,6 @@ module Lib where
 import Data.Char
 import Data.List
 import Data.List.Split
-import qualified Data.Set as S
 -- import Debug.Trace
 
 ------------------------------------------------------------------------ 01 --
@@ -151,11 +150,13 @@ d06_1 :: IO Int
 d06_1 =
   let nl "" = "\n"
       nl x = x
-   in sum . map (S.size . S.fromList) . lines . concatMap nl . lines <$> readFile "src/06-1.txt"
+   in sum . map (length . nub) . lines . concatMap nl . lines <$> readFile "src/06-1.txt"
 
 d06_2 :: IO Int
 d06_2 =
-  sum . concatMap ((\l -> nub . map (sum . map (fromEnum . (\c -> all (elem c) l))) $ l) . words)
+  let countCharInStrings c = fromEnum . all (elem c)
+  in sum
+    . concatMap ((\l -> nub . map (sum . map (`countCharInStrings` l)) $ l) . words)
     . splitOn "  "
     . unwords
     . lines
