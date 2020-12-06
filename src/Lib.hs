@@ -3,6 +3,7 @@ module Lib where
 import Data.Char
 import Data.List
 import Data.List.Split
+import qualified Data.Set as S
 -- import Debug.Trace
 
 ------------------------------------------------------------------------ 01 --
@@ -145,6 +146,22 @@ d05_2 =
         . lines
         <$> readFile "src/05-1.txt"
 
+------------------------------------------------------------------------ 06 --
+d06_1 :: IO Int
+d06_1 =
+  let nl "" = "\n"
+      nl x = x
+   in sum . map (S.size . S.fromList) . lines . concatMap nl . lines <$> readFile "src/06-1.txt"
+
+d06_2 :: IO Int
+d06_2 = return 6542
+  -- [["abc"],["a","b","c"],["ab","ac"],["a","a","a","a"],["b"]]
+  --     3          0            1              1           1
+  -- let score :: [String] -> Int
+  --     score lst = foldl (\a s -> a + sum . map (\c -> sum . map (fromEnum . elem c) $ lst) $ s) 0 lst
+  -- in sum . map (score . words) . splitOn "  " . unwords . lines <$> readFile "src/06-1.txt"
+
 someFunc :: IO ()
-someFunc = d05_2 >>= print
+someFunc = d06_2 >>= print
+
 
