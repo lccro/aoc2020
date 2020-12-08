@@ -1,8 +1,10 @@
+{-# LANGUAGE TypeApplications #-}
 module Lib where
 
 import Data.Char
 import Data.List
 import Data.List.Split
+import qualified Data.Map.Strict as M
 -- import Debug.Trace
 
 ------------------------------------------------------------------------ 01 --
@@ -151,12 +153,43 @@ d06_2 = sum . map (length . foldl1 intersect . lines) . splitOn "\n\n" <$> readF
 
 ------------------------------------------------------------------------ 07 --
 d07_1 :: IO Int
-d07_1 = return 7
+d07_1 =
+  let shinyGold m = M.foldrWithKey (\color _ acc -> go color + acc) 0 m
+        where
+          go color
+            | "shiny gold" `elem` colors = 1
+            | otherwise = foldr (max . go) 0 colors
+            where
+              colors = m M.! color
+      parseK = head . splitOn " bags"
+      parseV = filter (/= "other") . map (unwords . tail . words . head . splitOn " bag")
+   in shinyGold . M.fromList
+        . map (\(x : xs) -> (parseK x, parseV xs))
+        . map (concatMap (splitOn ", "))
+        . map (splitOn " contain ")
+        . lines
+        <$> readFile "src/07-1.txt"
 
 d07_2 :: IO Int
-d07_2 = return 7
+d07_2 =
+  let shinyGold m = go "shiny gold" - 1
+        where
+          go color
+            | null colors = 1
+            | otherwise = foldr (\(clr, cnt) acc -> cnt * go clr + acc) 1 colors
+            where
+              colors = m M.! color
+      parseC = filter (/= "other") . map (unwords . tail . words . head . splitOn " bag")
+      parseN = map ((read @Int) . head . words)
+      parseV = zip <$> parseC <*> parseN
+      parseK = head . splitOn " bags"
+   in shinyGold . M.fromList
+        . map (\(x : xs) -> (parseK x, parseV xs))
+        . map (concatMap (splitOn ", "))
+        . map (splitOn " contain ")
+        . lines
+        <$> readFile "src/07-1.txt"
 
 someFunc :: IO ()
-someFunc = d07_1 >>= print
-
+someFunc = d07_2 >>= print
 
