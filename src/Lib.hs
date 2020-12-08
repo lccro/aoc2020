@@ -46,8 +46,8 @@ d03_1 =
   let xo '#' = 1
       xo _ = 0
 
-      go (ndx, lst) acc = acc + (lst !! (ndx `rem` length lst))
-      p1 = foldr go 0 . zip [3, 6 ..] . tail
+      go acc (ndx, lst) = acc + (lst !! (ndx `rem` length lst))
+      p1 = foldl go 0 . zip [3, 6 ..] . tail
    in p1 . (map . map) xo . lines <$> readFile "src/03-1.txt"
 
 d03_2 :: IO Int
@@ -57,15 +57,13 @@ d03_2 =
       every2 (_ : y : xs) = y : every2 xs
       every2 _ = []
 
-      go (ndx, lst) acc = acc + (lst !! (ndx `rem` length lst))
-      p2 lst =
-        product
-          [ foldr go 0 . zip [1, 2 ..] . tail $ lst,
-            foldr go 0 . zip [3, 6 ..] . tail $ lst,
-            foldr go 0 . zip [5, 10 ..] . tail $ lst,
-            foldr go 0 . zip [7, 14 ..] . tail $ lst,
-            foldr go 0 . zip [1, 2 ..] . every2 . tail $ lst
-          ]
+      go acc (ndx, lst) = acc + (lst !! (ndx `rem` length lst))
+      p2 = product . sequence [
+            foldl go 0 . zip [1, 2 ..],
+            foldl go 0 . zip [3, 6 ..],
+            foldl go 0 . zip [5, 10 ..],
+            foldl go 0 . zip [7, 14 ..],
+            foldl go 0 . zip [1, 2 ..] . every2] . tail
    in p2 . (map . map) xo . lines <$> readFile "src/03-1.txt"
 
 ------------------------------------------------------------------------ 04 --
