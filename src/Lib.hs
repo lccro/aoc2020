@@ -7,6 +7,10 @@ import Data.List.Split
 import qualified Data.Map.Strict as M
 -- import Debug.Trace
 
+readSigned :: String -> Int
+readSigned ('+' : s) = read s
+readSigned ('-' : s) = - (read s)
+
 ------------------------------------------------------------------------ 01 --
 d01_1 :: IO Int
 d01_1 =
@@ -188,6 +192,37 @@ d07_2 =
         . lines
         <$> readFile "src/07-1.txt"
 
+------------------------------------------------------------------------ 08 --
+d08_1 :: IO Int
+d08_1 =
+  let step acc pc pcs prg
+        | pc `elem` pcs = acc
+        | otherwise = case splitOn " " (prg !! pc) of
+          ("acc" : a : _) -> step (acc + readSigned a) (pc + 1) (pcs ++ [pc]) prg
+          ("jmp" : n : _) -> step acc (pc + readSigned n) (pcs ++ [pc]) prg
+          _ -> step acc (pc + 1) (pcs ++ [pc]) prg
+   in step 0 0 [] . lines <$> readFile "src/08-1.txt"
+
+d08_2 :: IO Int
+d08_2 =
+  let switch [] = []
+      switch xs = case splitOn " " (head xs) of
+        ("jmp" : n : _) -> ("nop " ++ n) : tail xs
+        ("nop" : n : _) -> ("jmp " ++ n) : tail xs
+        _ -> xs
+      replace (h, t) = h ++ switch t
+      perm n prg = replace . splitAt n $ prg
+      combs prg = head . filter (/= -1) . map (\n -> step 0 0 [] . perm n $ prg) $ [0 .. length prg]
+      step acc pc pcs prg
+        | pc `elem` pcs = -1 -- loop
+        | pc >= length prg = acc -- end of program
+        | otherwise = case splitOn " " (prg !! pc) of
+          ("acc" : a : _) -> step (acc + readSigned a) (pc + 1) (pcs ++ [pc]) prg
+          ("jmp" : n : _) -> step acc (pc + readSigned n) (pcs ++ [pc]) prg
+          _ -> step acc (pc + 1) (pcs ++ [pc]) prg
+   in combs . lines <$> readFile "src/08-1.txt"
+
+
 someFunc :: IO ()
-someFunc = d07_2 >>= print
+someFunc = d08_2 >>= print
 
