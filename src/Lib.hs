@@ -4,6 +4,7 @@ import Data.Char
 import Data.List
 import Data.List.Split
 import qualified Data.Map.Strict as M
+import Data.Maybe (fromMaybe)
 -- import Debug.Trace
 
 readSigned :: String -> Int
@@ -222,6 +223,26 @@ d08_2 =
    in head . filter (/= -1) . combs . lines <$> readFile "src/08-1.txt"
 
 
-someFunc :: IO ()
-someFunc = d08_2 >>= print
+------------------------------------------------------------------------ 09 --
+d09_1 :: IO Int
+d09_1 =
+  let n = 25
+      found (h, t) = head t `notElem` [x + y | (x : xs) <- tails h, y <- xs]
+      go xs
+        | found (splitAt n xs) = xs !! n
+        | otherwise = go (tail xs)
+   in go . map read . lines <$> readFile "src/09-1.txt"
+
+d09_2 :: IO Int
+d09_2 =
+  let n = 542529149
+      pos = 616
+      sums = map sum . inits
+      index = fromMaybe 0 . elemIndex n . sums
+      go xs
+        | n `elem` sums xs = (inits xs !! index xs)
+        | otherwise = go (tail xs)
+   in sum . sequence [minimum, maximum] . go . map read . take pos . lines <$> readFile "src/09-1.txt"
+
+someFunc = d09_2 >>= print
 
