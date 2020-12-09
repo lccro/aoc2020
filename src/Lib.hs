@@ -1,4 +1,3 @@
-{-# LANGUAGE TypeApplications #-}
 module Lib where
 
 import Data.Char
@@ -181,8 +180,8 @@ d07_2 =
             | otherwise = foldr (\(clr, cnt) acc -> cnt * go clr + acc) 1 colors
             where
               colors = m M.! color
-      parseC = filter (/= "other") . map (unwords . tail . words . head . splitOn " bag")
-      parseN = map ((read @Int) . head . words)
+      parseC = filter (/= "other") . map (unwords . drop 1 . words . head . splitOn " bag")
+      parseN = map (read . head . words)
       parseV = zip <$> parseC <*> parseN
       parseK = head . splitOn " bags"
    in shinyGold . M.fromList
@@ -205,14 +204,14 @@ d08_1 =
 
 d08_2 :: IO Int
 d08_2 =
-  let switch [] = []
-      switch xs = case splitOn " " (head xs) of
+  let swap [] = []
+      swap xs = case splitOn " " (head xs) of
         ("jmp" : n : _) -> ("nop " ++ n) : tail xs
         ("nop" : n : _) -> ("jmp " ++ n) : tail xs
         _ -> xs
-      replace (h, t) = h ++ switch t
-      perm n prg = replace . splitAt n $ prg
-      combs prg = head . filter (/= -1) . map (\n -> step 0 0 [] . perm n $ prg) $ [0 .. length prg]
+      replace (h, t) = h ++ swap t
+      perm n = replace . splitAt n
+      combs prg = map (\n -> step 0 0 [] (perm n prg)) [0 .. length prg]
       step acc pc pcs prg
         | pc `elem` pcs = -1 -- loop
         | pc >= length prg = acc -- end of program
@@ -220,7 +219,7 @@ d08_2 =
           ("acc" : a : _) -> step (acc + readSigned a) (pc + 1) (pcs ++ [pc]) prg
           ("jmp" : n : _) -> step acc (pc + readSigned n) (pcs ++ [pc]) prg
           _ -> step acc (pc + 1) (pcs ++ [pc]) prg
-   in combs . lines <$> readFile "src/08-1.txt"
+   in head . filter (/= -1) . combs . lines <$> readFile "src/08-1.txt"
 
 
 someFunc :: IO ()
