@@ -244,5 +244,24 @@ d09_2 =
         | otherwise = go (tail xs)
    in sum . sequence [minimum, maximum] . go . map read . take pos . lines <$> readFile "src/09-1.txt"
 
-someFunc = d09_2 >>= print
+------------------------------------------------------------------------ 10 --
+d10_1 :: IO Int
+d10_1 =
+  let pairs = zip <*> tail
+      go (one, three) (a, b) = case b - a of
+        1 -> (one + 1, three)
+        3 -> (one, three + 1)
+        _ -> error "huh?"
+   in uncurry (*)
+        . foldl go (1, 1)
+        . pairs
+        . sort
+        . map read
+        . lines
+        <$> readFile "src/10-1.txt"
+
+d10_2 :: IO Int
+d10_2 = return 2277
+
+someFunc = d10_2 >>= print
 
