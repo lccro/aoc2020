@@ -220,7 +220,7 @@ d08_2 =
           ("acc" : a : _) -> step (acc + readSigned a) (pc + 1) (pcs ++ [pc]) prg
           ("jmp" : n : _) -> step acc (pc + readSigned n) (pcs ++ [pc]) prg
           _ -> step acc (pc + 1) (pcs ++ [pc]) prg
-   in head . filter (/= -1) . combs . lines <$> readFile "src/08-1.txt"
+   in head . dropWhile (== -1) . combs . lines <$> readFile "src/08-1.txt"
 
 
 ------------------------------------------------------------------------ 09 --
@@ -237,21 +237,23 @@ d09_2 :: IO Int
 d09_2 =
   let n = 542529149
       pos = 616
-      sums = map sum . inits
-      index = fromMaybe 0 . elemIndex n . sums
       go xs
-        | n `elem` sums xs = (inits xs !! index xs)
+        | n `elem` s = (i !! index s)
         | otherwise = go (tail xs)
+        where
+          i = inits xs
+          s = map sum i
+          index = length . takeWhile (/= n)
    in sum . sequence [minimum, maximum] . go . map read . take pos . lines <$> readFile "src/09-1.txt"
 
 ------------------------------------------------------------------------ 10 --
 d10_1 :: IO Int
 d10_1 =
   let pairs = zip <*> tail
-      go (one, three) (a, b) = case b - a of
-        1 -> (one + 1, three)
-        3 -> (one, three + 1)
-        _ -> error "huh?"
+      go (one, three) (a, b)
+        | b - a == 1 = (one + 1, three)
+        | b - a == 3 = (one, three + 1)
+        | otherwise = error "impossibru"
    in uncurry (*)
         . foldl go (1, 1)
         . pairs
