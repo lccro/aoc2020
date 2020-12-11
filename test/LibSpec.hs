@@ -45,5 +45,5 @@ spec = do
 
     it "day 10" $ do
       d10_1 `shouldReturn` 2277
-      d10_2 `shouldReturn` 2277
+      d10_2 `shouldReturn` 37024595836928
 

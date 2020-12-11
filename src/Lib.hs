@@ -1,10 +1,10 @@
 module Lib where
 
+import Data.Bifunctor (bimap)
 import Data.Char
 import Data.List
 import Data.List.Split
 import qualified Data.Map.Strict as M
-import Data.Maybe (fromMaybe)
 -- import Debug.Trace
 
 readSigned :: String -> Int
@@ -249,21 +249,22 @@ d09_2 =
 ------------------------------------------------------------------------ 10 --
 d10_1 :: IO Int
 d10_1 =
-  let pairs = zip <*> tail
-      go (one, three) (a, b)
-        | b - a == 1 = (one + 1, three)
-        | b - a == 3 = (one, three + 1)
-        | otherwise = error "impossibru"
-   in uncurry (*)
-        . foldl go (1, 1)
-        . pairs
-        . sort
-        . map read
-        . lines
-        <$> readFile "src/10-1.txt"
+  uncurry (*) . bimap length ((+ 1) . length) . partition (== -1)
+    . (zipWith (-) <*> tail)
+    . (0 :)
+    . sort
+    . map read
+    . lines
+    <$> readFile "src/10-1.txt"
 
 d10_2 :: IO Int
-d10_2 = return 2277
+d10_2 =
+  let go memo (x : xs)
+        | null xs = i
+        | otherwise = go ((x, i) : memo) xs
+        where
+          i = sum . map snd . takeWhile (\(y, _) -> x - y <= 3) $ memo
+   in go [(0, 1)] . sort . map read . lines <$> readFile "src/10-1.txt"
 
-someFunc = d10_2 >>= print
+someFunc = d10_1 >>= print
 
