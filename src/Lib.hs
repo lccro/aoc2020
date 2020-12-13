@@ -289,7 +289,22 @@ d12_1 =
    in (\(_, a, b) -> a + b) . foldl go ("E", 0, 0) . lines <$> readFile "src/12-1.txt"
 
 d12_2 :: IO Int
-d12_2 = return 998
+d12_2 =
+  let oriR 1 wx wy x y = (wy, - wx, x, y)
+      oriR n wx wy x y = oriR (n -1) wy (- wx) x y
+      oriL 1 wx wy x y = (- wy, wx, x, y)
+      oriL n wx wy x y = oriL (n -1) (- wy) wx x y
+      -- go (wx, wy, x, y) _ | trace (show wx ++ "," ++ show wy ++ "," ++ show x ++ "," ++ show y) False = undefined
+      go (wx, wy, x, y) step = case splitAt 1 step of
+        ("N", n) -> (wx, wy + read n, x, y)
+        ("S", n) -> (wx, wy - read n, x, y)
+        ("E", n) -> (wx + read n, wy, x, y)
+        ("W", n) -> (wx - read n, wy, x, y)
+        ("L", n) -> oriL (div (read n) 90) wx wy x y
+        ("R", n) -> oriR (div (read n) 90) wx wy x y
+        ("F", n) -> (wx, wy, x + read n * wx, y + read n * wy)
+        _ -> error "huh?"
+   in (\(_, _, a, b) -> abs a + abs b) . foldl go (10, 1, 0, 0) . lines <$> readFile "src/12-1.txt"
 
-someFunc = d12_1 >>= print
+someFunc = d12_2 >>= print
 
