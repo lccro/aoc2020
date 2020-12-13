@@ -266,5 +266,30 @@ d10_2 =
           i = sum . map snd . takeWhile (\(y, _) -> x - y <= 3) $ memo
    in go [(0, 1)] . sort . map read . lines <$> readFile "src/10-1.txt"
 
-someFunc = d10_1 >>= print
+------------------------------------------------------------------------ 10 --
+d12_1 :: IO Int
+d12_1 =
+  let oriR o n = (!! (n `div` 90)) . dropWhile (/= o) . cycle $ ["E", "S", "W", "N"]
+      oriL o n = (!! (n `div` 90)) . dropWhile (/= o) . cycle $ ["E", "N", "W", "S"]
+      fwd o x y n = case o of
+        "N" -> (o, x, y - n)
+        "S" -> (o, x, y + n)
+        "E" -> (o, x + n, y)
+        "W" -> (o, x - n, y)
+        _ -> error "huh?"
+      go (o, x, y) step = case splitAt 1 step of
+        ("N", n) -> (o, x, y - read n)
+        ("S", n) -> (o, x, y + read n)
+        ("E", n) -> (o, x + read n, y)
+        ("W", n) -> (o, x - read n, y)
+        ("L", n) -> (oriL o (read n), x, y)
+        ("R", n) -> (oriR o (read n), x, y)
+        ("F", n) -> fwd o x y (read n)
+        _ -> error "huh?"
+   in (\(_, a, b) -> a + b) . foldl go ("E", 0, 0) . lines <$> readFile "src/12-1.txt"
+
+d12_2 :: IO Int
+d12_2 = return 998
+
+someFunc = d12_1 >>= print
 
