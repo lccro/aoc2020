@@ -266,7 +266,7 @@ d10_2 =
           i = sum . map snd . takeWhile (\(y, _) -> x - y <= 3) $ memo
    in go [(0, 1)] . sort . map read . lines <$> readFile "src/10-1.txt"
 
------------------------------------------------------------------------- 10 --
+------------------------------------------------------------------------ 12 --
 d12_1 :: IO Int
 d12_1 =
   let oriR o n = (!! (n `div` 90)) . dropWhile (/= o) . cycle $ ["E", "S", "W", "N"]
@@ -306,5 +306,35 @@ d12_2 =
         _ -> error "huh?"
    in (\(_, _, a, b) -> abs a + abs b) . foldl go (10, 1, 0, 0) . lines <$> readFile "src/12-1.txt"
 
-someFunc = d12_2 >>= print
+------------------------------------------------------------------------ 11 --
+d11_1 :: IO Int
+d11_1 =
+  let neigh row x y board =
+        [ (board !! (y + n)) !! (x + m)
+          | m <- [- 1, 0, 1],
+            n <- [- 1, 0, 1],
+            (m, n) /= (0, 0),
+            x + m >= 0 && x + m < length row,
+            y + n >= 0 && y + n < length board
+        ]
+      go prev
+        | prev == next prev = prev
+        | otherwise = go (next prev)
+      next board =
+        chunksOf
+          (length . head $ board)
+          [ adj x y
+            | (y, row) <- zip [0 ..] board,
+              (x, cell) <- zip [0 ..] row,
+              let adj x y = case cell of
+                    'L' -> (\n -> if n == 0 then '#' else 'L') . length . filter (== '#') . neigh row x y $ board
+                    '#' -> (\n -> if n >= 4 then 'L' else '#') . length . filter (== '#') . neigh row x y $ board
+                    x -> x
+          ]
+   in sum . map (length . filter (== '#')) . go . lines <$> readFile "src/11-1.txt"
+
+d11_2 :: IO Int
+d11_2 = return 2265
+
+someFunc = d11_2 >>= print
 
