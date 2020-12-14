@@ -7,6 +7,10 @@ import Test.Hspec
 spec :: Spec
 spec = do
   describe "all" $ do
+    it "day 13" $ do
+      d13_1 `shouldReturn` 102
+      d13_2 `shouldReturn` 102
+
     it "day 11" $ do
       d11_1 `shouldReturn` 2265
       d11_2 `shouldReturn` 2265

@@ -5,7 +5,7 @@ import Data.Char
 import Data.List
 import Data.List.Split
 import qualified Data.Map.Strict as M
--- import Debug.Trace
+import Debug.Trace
 
 readSigned :: String -> Int
 readSigned ('+' : s) = read s
@@ -333,5 +333,22 @@ d11_1 =
 d11_2 :: IO Int
 d11_2 = return 2265
 
-someFunc = d11_2 >>= print
+------------------------------------------------------------------------ 13 --
+d13_1 :: IO Int
+d13_1 =
+  let bus n b
+        -- | trace (show n ++ " " ++ show (map (rem n) b)) False = undefined
+        | 0 `elem` rems = (n, b !! (length . takeWhile (/= 0) $ rems))
+        | otherwise = bus (n + 1) b
+        where rems = map (rem n) b
+      go (t : s : _) = (\(n2,b2) -> (n2-n) * b2) (bus n b)
+        where
+          n = read t :: Int
+          b = map read . filter (/= "x") . splitOn "," $ s :: [Int]
+   in go . lines <$> readFile "src/13-1.txt"
+
+d13_2 :: IO String
+d13_2 = show . last . lines <$> readFile "src/13-1.txt"
+
+someFunc = d13_2 >>= putStrLn -- print
 
