@@ -269,22 +269,21 @@ d10_2 =
 ------------------------------------------------------------------------ 12 --
 d12_1 :: IO Int
 d12_1 =
-  let oriR o n = (!! (n `div` 90)) . dropWhile (/= o) . cycle $ ["E", "S", "W", "N"]
-      oriL o n = (!! (n `div` 90)) . dropWhile (/= o) . cycle $ ["E", "N", "W", "S"]
-      fwd o x y n = case o of
-        "N" -> (o, x, y - n)
-        "S" -> (o, x, y + n)
-        "E" -> (o, x + n, y)
-        "W" -> (o, x - n, y)
-        _ -> error "huh?"
+  let oriR o n = (!! n) . dropWhile (/= o) . cycle $ ["E", "S", "W", "N"]
+      oriL o n = (!! n) . dropWhile (/= o) . cycle $ ["E", "N", "W", "S"]
       go (o, x, y) step = case splitAt 1 step of
         ("N", n) -> (o, x, y - read n)
         ("S", n) -> (o, x, y + read n)
         ("E", n) -> (o, x + read n, y)
         ("W", n) -> (o, x - read n, y)
-        ("L", n) -> (oriL o (read n), x, y)
-        ("R", n) -> (oriR o (read n), x, y)
-        ("F", n) -> fwd o x y (read n)
+        ("L", n) -> (oriL o (div (read n) 90), x, y)
+        ("R", n) -> (oriR o (div (read n) 90), x, y)
+        ("F", n) -> case o of
+          "N" -> (o, x, y - read n)
+          "S" -> (o, x, y + read n)
+          "E" -> (o, x + read n, y)
+          "W" -> (o, x - read n, y)
+          _ -> error "huh?"
         _ -> error "huh?"
    in (\(_, a, b) -> a + b) . foldl go ("E", 0, 0) . lines <$> readFile "src/12-1.txt"
 
@@ -309,14 +308,12 @@ d12_2 =
 ------------------------------------------------------------------------ 11 --
 d11_1 :: IO Int
 d11_1 =
-  let neigh row x y board =
-        [ (board !! (y + n)) !! (x + m)
-          | m <- [- 1, 0, 1],
-            n <- [- 1, 0, 1],
-            (m, n) /= (0, 0),
-            x + m >= 0 && x + m < length row,
-            y + n >= 0 && y + n < length board
-        ]
+  let coords x y = [(x + m, y + n) | m <- [- 1, 0, 1], n <- [- 1, 0, 1], (m, n) /= (0, 0)]
+      neighs board (x, y)
+        | 0 <= x && x < length (head board) && 0 <= y && y < length board = board !! y !! x
+        | otherwise = '\xff'
+      neighC x y board = length . filter (== '#') . map (neighs board) $ coords x y
+      ifNeigh cond t f n = if cond n then t else f
       go prev
         | prev == next prev = prev
         | otherwise = go (next prev)
@@ -327,8 +324,8 @@ d11_1 =
             | (y, row) <- zip [0 ..] board,
               (x, cell) <- zip [0 ..] row,
               let adj x y = case cell of
-                    'L' -> (\n -> if n == 0 then '#' else 'L') . length . filter (== '#') . neigh row x y $ board
-                    '#' -> (\n -> if n >= 4 then 'L' else '#') . length . filter (== '#') . neigh row x y $ board
+                    'L' -> ifNeigh (== 0) '#' 'L' . neighC x y $ board
+                    '#' -> ifNeigh (>= 4) 'L' '#' . neighC x y $ board
                     x -> x
           ]
    in sum . map (length . filter (== '#')) . go . lines <$> readFile "src/11-1.txt"
