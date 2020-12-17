@@ -5,7 +5,7 @@ import Data.Char
 import Data.List
 import Data.List.Split
 import qualified Data.Map.Strict as M
-import Debug.Trace
+-- import Debug.Trace
 
 readSigned :: String -> Int
 readSigned ('+' : s) = read s
@@ -350,5 +350,9 @@ d13_1 =
 d13_2 :: IO String
 d13_2 = show . last . lines <$> readFile "src/13-1.txt"
 
-someFunc = d13_2 >>= putStrLn -- print
+------------------------------------------------------------------------ 14 --
+d14_1 :: IO String
+d14_1 = return . show $ 0
+
+someFunc = d14_1 >>= putStrLn -- print
 
