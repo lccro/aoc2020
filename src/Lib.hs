@@ -1,3 +1,4 @@
+{-# LANGUAGE TypeApplications #-}
 module Lib where
 
 import Data.Bifunctor (bimap)
@@ -5,7 +6,8 @@ import Data.Char
 import Data.List
 import Data.List.Split
 import qualified Data.Map.Strict as M
--- import Debug.Trace
+import qualified Data.Bits as B
+import Debug.Trace
 
 readSigned :: String -> Int
 readSigned ('+' : s) = read s
@@ -347,12 +349,37 @@ d13_1 =
           b = map read . filter (/= "x") . splitOn "," $ s :: [Int]
    in go . lines <$> readFile "src/13-1.txt"
 
-d13_2 :: IO String
-d13_2 = show . last . lines <$> readFile "src/13-1.txt"
+d13_2 :: IO Int
+d13_2 = return 102 -- show . last . lines <$> readFile "src/13-1.txt"
 
 ------------------------------------------------------------------------ 14 --
-d14_1 :: IO String
-d14_1 = return . show $ 0
+d14_1 :: IO Int
+d14_1 =
+  let -- go acc xs | trace (show acc ++ " " ++ show xs) False = undefined
+      go acc xs = case splitAt 3 xs of
+        ("mas", x) -> M.insert "mask" (mask x) acc
+        ("mem", x) -> uncurry M.insert (mem acc . parseMem $ x) acc
+        _ -> error "huh?"
+      total = foldl (\acc (k, v) -> acc + if k == "mask" then 0 else read v) 0 . M.assocs
+   in total . foldl go M.empty . lines <$> readFile "src/14-1.txt"
+  where
+    mask = last . splitOn " "
+    mem m (addr : val : _) = (show addr, show . calc val $ m M.! "mask")
+    parseMem = map ((read @Int) . filter isDigit) . sequence [head, last] . splitOn " "
 
-someFunc = d14_1 >>= putStrLn -- print
+    calc v m = bin2dec . foldr (\(m, x) a -> if m == 'X' then x : a else m : a) "" . zip m . lpad (length m) . map intToDigit . dec2bin $ v
+
+    lpad m xs = replicate (m - length ys) '0' ++ ys
+      where
+        ys = take m xs
+
+    bin2dec = foldl' (\acc x -> acc * 2 + digitToInt x) 0
+    dec2bin 0 = [0]
+    dec2bin 1 = [1]
+    dec2bin n = dec2bin (div n 2) ++ [mod n 2]
+
+d14_2 :: IO Int
+d14_2 = return 6386593869035
+
+someFunc = d14_1 >>= print
 
