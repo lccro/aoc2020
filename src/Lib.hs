@@ -9,6 +9,18 @@ import qualified Data.Map.Strict as M
 import qualified Data.Bits as B
 import Debug.Trace
 
+lpad s p xs = replicate (s - length ys) p ++ ys
+  where
+    ys = take s xs
+
+bin2dec :: String -> Int
+bin2dec = foldl' (\acc x -> acc * 2 + digitToInt x) 0
+
+dec2bin :: Int -> [Int]
+dec2bin 0 = [0]
+dec2bin 1 = [1]
+dec2bin n = dec2bin (div n 2) ++ [mod n 2]
+
 readSigned :: String -> Int
 readSigned ('+' : s) = read s
 readSigned ('-' : s) = - (read s)
@@ -355,28 +367,37 @@ d13_2 = return 102 -- show . last . lines <$> readFile "src/13-1.txt"
 ------------------------------------------------------------------------ 14 --
 d14_1 :: IO Int
 d14_1 =
-  let -- go acc xs | trace (show acc ++ " " ++ show xs) False = undefined
-      go acc xs = case splitAt 3 xs of
-        ("mas", x) -> M.insert "mask" (mask x) acc
-        ("mem", x) -> uncurry M.insert (mem acc . parseMem $ x) acc
+  let memPair mask (addr : val : _) = (addr, calc mask val)
+      cond ('X', value) a = value : a
+      cond (mask, _) a = mask : a
+
+      calc mask =
+        show
+          . bin2dec
+          . foldr cond ""
+          . zip mask
+          . lpad (length mask) '0'
+          . map intToDigit
+          . dec2bin
+          . read
+
+      parseMem =
+        map (filter isDigit)
+          . sequence [head, last] -- addr, val
+          . splitOn " "
+
+      -- go acc xs | trace (show acc ++ " " ++ show xs) False = undefined
+      go m xs = case splitAt 3 xs of
+        ("mas", mask) -> M.insert "mask" (last . splitOn " " $ mask) m
+        ("mem", mem) -> uncurry M.insert (memPair (m M.! "mask") . parseMem $ mem) m
         _ -> error "huh?"
-      total = foldl (\acc (k, v) -> acc + if k == "mask" then 0 else read v) 0 . M.assocs
-   in total . foldl go M.empty . lines <$> readFile "src/14-1.txt"
-  where
-    mask = last . splitOn " "
-    mem m (addr : val : _) = (show addr, show . calc val $ m M.! "mask")
-    parseMem = map ((read @Int) . filter isDigit) . sequence [head, last] . splitOn " "
-
-    calc v m = bin2dec . foldr (\(m, x) a -> if m == 'X' then x : a else m : a) "" . zip m . lpad (length m) . map intToDigit . dec2bin $ v
-
-    lpad m xs = replicate (m - length ys) '0' ++ ys
-      where
-        ys = take m xs
-
-    bin2dec = foldl' (\acc x -> acc * 2 + digitToInt x) 0
-    dec2bin 0 = [0]
-    dec2bin 1 = [1]
-    dec2bin n = dec2bin (div n 2) ++ [mod n 2]
+   in sum
+        . map read
+        . M.elems
+        . M.delete "mask"
+        . foldl go M.empty
+        . lines
+        <$> readFile "src/14-1.txt"
 
 d14_2 :: IO Int
 d14_2 = return 6386593869035
