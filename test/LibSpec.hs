@@ -9,7 +9,7 @@ spec = do
   describe "all" $ do
     it "day 14" $ do
       d14_1 `shouldReturn` 6386593869035
-      d14_2 `shouldReturn` 6386593869035
+      d14_2 `shouldReturn` 4288986482164
 
     it "day 13" $ do
       d13_1 `shouldReturn` 102

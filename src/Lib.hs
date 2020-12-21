@@ -1,4 +1,3 @@
-{-# LANGUAGE TypeApplications #-}
 module Lib where
 
 import Data.Bifunctor (bimap)
@@ -6,8 +5,12 @@ import Data.Char
 import Data.List
 import Data.List.Split
 import qualified Data.Map.Strict as M
-import qualified Data.Bits as B
+import qualified Data.Map.Merge.Strict as MM
+import Data.Bits ((.|.))
 import Debug.Trace
+
+unionWithKey f = MM.merge MM.preserveMissing MM.preserveMissing (MM.zipWithMatched f)
+unionFavorRight m1 m2 = unionWithKey (\_ _ c -> c) m1 m2
 
 lpad s p xs = replicate (s - length ys) p ++ ys
   where
@@ -400,7 +403,44 @@ d14_1 =
         <$> readFile "src/14-1.txt"
 
 d14_2 :: IO Int
-d14_2 = return 6386593869035
+d14_2 =
+  let memPairs mask (addr : val : _) = M.fromList (combs (calc mask addr) `zip` repeat val)
+      -- combs xs | trace (show xs) False = undefined
+      combs [] = [""]
+      combs (x : xs)
+        | x == 'X' = map ('0' :) (combs xs) ++ map ('1' :) (combs xs)
+        | otherwise = map (x :) (combs xs)
 
-someFunc = d14_1 >>= print
+      cond ('X', _) a = 'X' : a
+      cond (m, val) a = intToDigit (digitToInt m .|. digitToInt val) : a
+
+      calc mask =
+        foldr cond ""
+          . zip mask
+          -- . foldr cond ""
+          -- . zip mask
+          . lpad (length mask) '0'
+          . map intToDigit
+          . dec2bin
+          . read
+
+      parseMem =
+        map (filter isDigit)
+          . sequence [head, last] -- addr, val
+          . splitOn " "
+
+      -- go acc xs | trace (show acc ++ " " ++ show xs) False = undefined
+      go m xs = case splitAt 3 xs of
+        ("mas", mask) -> M.insert "mask" (last . splitOn " " $ mask) m
+        ("mem", mem) -> unionFavorRight m (memPairs (m M.! "mask") . parseMem $ mem)
+        _ -> error "huh?"
+   in sum
+        . map read
+        . M.elems
+        . M.delete "mask"
+        . foldl go M.empty
+        . lines
+        <$> readFile "src/14-1.txt"
+
+someFunc = d14_2 >>= print
 
