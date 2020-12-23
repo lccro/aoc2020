@@ -417,8 +417,6 @@ d14_2 =
       calc mask =
         foldr cond ""
           . zip mask
-          -- . foldr cond ""
-          -- . zip mask
           . lpad (length mask) '0'
           . map intToDigit
           . dec2bin
