@@ -1,16 +1,17 @@
 module Lib where
 
 import Data.Bifunctor (bimap)
+import Data.Bits ((.|.))
 import Data.Char
 import Data.List
 import Data.List.Split
-import qualified Data.Map.Strict as M
+import qualified Data.IntMap.Strict as IM
 import qualified Data.Map.Merge.Strict as MM
-import Data.Bits ((.|.))
+import qualified Data.Map.Strict as M
 import Debug.Trace
 
 unionWithKey f = MM.merge MM.preserveMissing MM.preserveMissing (MM.zipWithMatched f)
-unionFavorRight m1 m2 = unionWithKey (\_ _ c -> c) m1 m2
+unionFavorRight = unionWithKey (\_ _ c -> c)
 
 lpad s p xs = replicate (s - length ys) p ++ ys
   where
@@ -440,5 +441,19 @@ d14_2 =
         . lines
         <$> readFile "src/14-1.txt"
 
-someFunc = d14_2 >>= print
+------------------------------------------------------------------------ 15 --
+d15_1 :: IO Int
+d15_1 =
+  let input = IM.fromList $ zip [2, 1, 10, 11, 0, 6] [1 ..]
+      -- go _ m last i | trace (show m ++ " " ++ show last ++ " " ++ show i) False = undefined
+      go (last, m) i = (i - IM.findWithDefault i last m, IM.insert last i m)
+   in return . fst . foldl go (0, input) $ [(1 + length input) .. 2020 -1]
+
+d15_2 :: IO Int
+d15_2 =
+  let input = IM.fromList $ zip [2, 1, 10, 11, 0, 6] [1 ..]
+      go (last, m) i = (i - IM.findWithDefault i last m, IM.insert last i m)
+   in return . fst . foldl' go (0, input) $ [(1 + length input) .. 30000000 -1]
+
+someFunc = d15_1 >>= print
 
