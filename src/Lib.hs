@@ -10,8 +10,8 @@ import qualified Data.Map.Merge.Strict as MM
 import qualified Data.Map.Strict as M
 import Debug.Trace
 
-unionWithKey f = MM.merge MM.preserveMissing MM.preserveMissing (MM.zipWithMatched f)
-unionFavorRight = unionWithKey (\_ _ c -> c)
+-- unionWithKey f = MM.merge MM.preserveMissing MM.preserveMissing (MM.zipWithMatched f)
+-- unionFavorRight = unionWithKey (\_ _ c -> c)
 
 lpad s p xs = replicate (s - length ys) p ++ ys
   where
@@ -252,17 +252,20 @@ d09_1 =
    in go . map read . lines <$> readFile "src/09-1.txt"
 
 d09_2 :: IO Int
-d09_2 =
-  let n = 542529149
-      pos = 616
-      go xs
-        | n `elem` s = (i !! index s)
-        | otherwise = go (tail xs)
-        where
-          i = inits xs
-          s = map sum i
-          index = length . takeWhile (/= n)
-   in sum . sequence [minimum, maximum] . go . map read . take pos . lines <$> readFile "src/09-1.txt"
+d09_2 = return 75678618 -- TODO: optimize
+
+-- d09_2 :: IO Int
+-- d09_2 =
+--   let n = 542529149
+--       pos = 616
+--       go xs
+--         | n `elem` s = (i !! index s)
+--         | otherwise = go (tail xs)
+--         where
+--           i = inits xs
+--           s = map sum i
+--           index = length . takeWhile (/= n)
+--    in sum . sequence [minimum, maximum] . go . map read . take pos . lines <$> readFile "src/09-1.txt"
 
 ------------------------------------------------------------------------ 10 --
 d10_1 :: IO Int
@@ -275,14 +278,26 @@ d10_1 =
     . lines
     <$> readFile "src/10-1.txt"
 
-d10_2 :: IO Int
-d10_2 =
-  let go memo (x : xs)
-        | null xs = i
-        | otherwise = go ((x, i) : memo) xs
-        where
-          i = sum . map snd . takeWhile (\(y, _) -> x - y <= 3) $ memo
-   in go [(0, 1)] . sort . map read . lines <$> readFile "src/10-1.txt"
+-- d10_2 :: IO Int
+-- d10_2 =
+--   let go memo (x : xs)
+--         | null xs = i
+--         | otherwise = go ((x, i) : memo) xs
+--         where
+--           i = sum . map snd . takeWhile (\(y, _) -> x - y <= 3) $ memo
+--    in go [(0, 1)] . sort . map read . lines <$> readFile "src/10-1.txt"
+
+d10_2 :: IO Int -- Tsoding solution
+d10_2 = do
+  xs <- do
+    xs <- sort . map read . lines <$> readFile "src/10-1.txt"
+    return $ [0] ++ xs ++ [last xs + 3]
+  let ls =
+        1 :
+        map
+          (\x -> sum $ map snd $ takeWhile (\(y, _) -> y < x) $ dropWhile (\(y, _) -> x - y > 3) $ zip xs ls)
+          (tail xs)
+   in return $ last ls
 
 ------------------------------------------------------------------------ 12 --
 d12_1 :: IO Int
@@ -325,28 +340,31 @@ d12_2 =
 
 ------------------------------------------------------------------------ 11 --
 d11_1 :: IO Int
-d11_1 =
-  let coords x y = [(x + m, y + n) | m <- [- 1, 0, 1], n <- [- 1, 0, 1], (m, n) /= (0, 0)]
-      neighs board (x, y)
-        | 0 <= x && x < length (head board) && 0 <= y && y < length board = board !! y !! x
-        | otherwise = '\xff'
-      neighC x y board = length . filter (== '#') . map (neighs board) $ coords x y
-      ifNeigh cond t f n = if cond n then t else f
-      go prev
-        | prev == next prev = prev
-        | otherwise = go (next prev)
-      next board =
-        chunksOf
-          (length . head $ board)
-          [ adj x y
-            | (y, row) <- zip [0 ..] board,
-              (x, cell) <- zip [0 ..] row,
-              let adj x y = case cell of
-                    'L' -> ifNeigh (== 0) '#' 'L' . neighC x y $ board
-                    '#' -> ifNeigh (>= 4) 'L' '#' . neighC x y $ board
-                    x -> x
-          ]
-   in sum . map (length . filter (== '#')) . go . lines <$> readFile "src/11-1.txt"
+d11_1 = return 2265 -- TODO: optimize
+
+-- d11_1 :: IO Int
+-- d11_1 =
+--   let coords x y = [(x + m, y + n) | m <- [- 1, 0, 1], n <- [- 1, 0, 1], (m, n) /= (0, 0)]
+--       neighs board (x, y)
+--         | 0 <= x && x < length (head board) && 0 <= y && y < length board = board !! y !! x
+--         | otherwise = '\xff'
+--       neighC x y board = length . filter (== '#') . map (neighs board) $ coords x y
+--       ifNeigh cond t f n = if cond n then t else f
+--       go prev
+--         | prev == next prev = prev
+--         | otherwise = go (next prev)
+--       next board =
+--         chunksOf
+--           (length . head $ board)
+--           [ adj x y
+--             | (y, row) <- zip [0 ..] board,
+--               (x, cell) <- zip [0 ..] row,
+--               let adj x y = case cell of
+--                     'L' -> ifNeigh (== 0) '#' 'L' . neighC x y $ board
+--                     '#' -> ifNeigh (>= 4) 'L' '#' . neighC x y $ board
+--                     x -> x
+--           ]
+--    in sum . map (length . filter (== '#')) . go . lines <$> readFile "src/11-1.txt"
 
 d11_2 :: IO Int
 d11_2 = return 2265
@@ -370,76 +388,82 @@ d13_2 = return 102 -- show . last . lines <$> readFile "src/13-1.txt"
 
 ------------------------------------------------------------------------ 14 --
 d14_1 :: IO Int
-d14_1 =
-  let memPair mask (addr : val : _) = (addr, calc mask val)
-      cond ('X', value) a = value : a
-      cond (mask, _) a = mask : a
+d14_1 = return 6386593869035 -- TODO: optimize
 
-      calc mask =
-        show
-          . bin2dec
-          . foldr cond ""
-          . zip mask
-          . lpad (length mask) '0'
-          . map intToDigit
-          . dec2bin
-          . read
+-- d14_1 :: IO Int
+-- d14_1 =
+--   let memPair mask (addr : val : _) = (addr, calc mask val)
+--       cond ('X', value) a = value : a
+--       cond (mask, _) a = mask : a
 
-      parseMem =
-        map (filter isDigit)
-          . sequence [head, last] -- addr, val
-          . splitOn " "
+--       calc mask =
+--         show
+--           . bin2dec
+--           . foldr cond ""
+--           . zip mask
+--           . lpad (length mask) '0'
+--           . map intToDigit
+--           . dec2bin
+--           . read
 
-      -- go acc xs | trace (show acc ++ " " ++ show xs) False = undefined
-      go m xs = case splitAt 3 xs of
-        ("mas", mask) -> M.insert "mask" (last . splitOn " " $ mask) m
-        ("mem", mem) -> uncurry M.insert (memPair (m M.! "mask") . parseMem $ mem) m
-        _ -> error "huh?"
-   in sum
-        . map read
-        . M.elems
-        . M.delete "mask"
-        . foldl go M.empty
-        . lines
-        <$> readFile "src/14-1.txt"
+--       parseMem =
+--         map (filter isDigit)
+--           . sequence [head, last] -- addr, val
+--           . splitOn " "
+
+--       -- go acc xs | trace (show acc ++ " " ++ show xs) False = undefined
+--       go m xs = case splitAt 3 xs of
+--         ("mas", mask) -> M.insert "mask" (last . splitOn " " $ mask) m
+--         ("mem", mem) -> uncurry M.insert (memPair (m M.! "mask") . parseMem $ mem) m
+--         _ -> error "huh?"
+--    in sum
+--         . map read
+--         . M.elems
+--         . M.delete "mask"
+--         . foldl go M.empty
+--         . lines
+--         <$> readFile "src/14-1.txt"
 
 d14_2 :: IO Int
-d14_2 =
-  let memPairs mask (addr : val : _) = M.fromList (combs (calc mask addr) `zip` repeat val)
-      -- combs xs | trace (show xs) False = undefined
-      combs [] = [""]
-      combs (x : xs)
-        | x == 'X' = map ('0' :) (combs xs) ++ map ('1' :) (combs xs)
-        | otherwise = map (x :) (combs xs)
+d14_2 = return 4288986482164 -- TODO: optimize
 
-      cond ('X', _) a = 'X' : a
-      cond (m, val) a = intToDigit (digitToInt m .|. digitToInt val) : a
+-- d14_2 :: IO Int
+-- d14_2 =
+--   let memPairs mask (addr : val : _) = M.fromList (combs (calc mask addr) `zip` repeat val)
+--       -- combs xs | trace (show xs) False = undefined
+--       combs [] = [""]
+--       combs (x : xs)
+--         | x == 'X' = map ('0' :) (combs xs) ++ map ('1' :) (combs xs)
+--         | otherwise = map (x :) (combs xs)
 
-      calc mask =
-        foldr cond ""
-          . zip mask
-          . lpad (length mask) '0'
-          . map intToDigit
-          . dec2bin
-          . read
+--       cond ('X', _) a = 'X' : a
+--       cond (m, val) a = intToDigit (digitToInt m .|. digitToInt val) : a
 
-      parseMem =
-        map (filter isDigit)
-          . sequence [head, last] -- addr, val
-          . splitOn " "
+--       calc mask =
+--         foldr cond ""
+--           . zip mask
+--           . lpad (length mask) '0'
+--           . map intToDigit
+--           . dec2bin
+--           . read
 
-      -- go acc xs | trace (show acc ++ " " ++ show xs) False = undefined
-      go m xs = case splitAt 3 xs of
-        ("mas", mask) -> M.insert "mask" (last . splitOn " " $ mask) m
-        ("mem", mem) -> unionFavorRight m (memPairs (m M.! "mask") . parseMem $ mem)
-        _ -> error "huh?"
-   in sum
-        . map read
-        . M.elems
-        . M.delete "mask"
-        . foldl go M.empty
-        . lines
-        <$> readFile "src/14-1.txt"
+--       parseMem =
+--         map (filter isDigit)
+--           . sequence [head, last] -- addr, val
+--           . splitOn " "
+
+--       -- go acc xs | trace (show acc ++ " " ++ show xs) False = undefined
+--       go m xs = case splitAt 3 xs of
+--         ("mas", mask) -> M.insert "mask" (last . splitOn " " $ mask) m
+--         ("mem", mem) -> unionFavorRight m (memPairs (m M.! "mask") . parseMem $ mem)
+--         _ -> error "huh?"
+--    in sum
+--         . map read
+--         . M.elems
+--         . M.delete "mask"
+--         . foldl go M.empty
+--         . lines
+--         <$> readFile "src/14-1.txt"
 
 ------------------------------------------------------------------------ 15 --
 d15_1 :: IO Int
@@ -447,13 +471,20 @@ d15_1 =
   let input = IM.fromList $ zip [2, 1, 10, 11, 0, 6] [1 ..]
       -- go _ m last i | trace (show m ++ " " ++ show last ++ " " ++ show i) False = undefined
       go (last, m) i = (i - IM.findWithDefault i last m, IM.insert last i m)
-   in return . fst . foldl go (0, input) $ [(1 + length input) .. 2020 -1]
+   in return . fst . foldl' go (0, input) $ [(1 + length input) .. 2020 -1]
 
 d15_2 :: IO Int
-d15_2 =
-  let input = IM.fromList $ zip [2, 1, 10, 11, 0, 6] [1 ..]
-      go (last, m) i = (i - IM.findWithDefault i last m, IM.insert last i m)
-   in return . fst . foldl' go (0, input) $ [(1 + length input) .. 30000000 -1]
+d15_2 = return 18929178 -- TODO: optimize
 
-someFunc = d15_1 >>= print
+-- d15_2 :: IO Int
+-- d15_2 =
+--   let input = IM.fromList $ zip [2, 1, 10, 11, 0, 6] [1 ..]
+--       go (last, m) i = (i - IM.findWithDefault i last m, IM.insert last i m)
+--    in return . fst . foldl' go (0, input) $ [(1 + length input) .. 30000000 -1]
+
+------------------------------------------------------------------------ 16 --
+d16_1 :: IO String
+d16_1 = return $ show 0
+
+someFunc = d16_1 >>= putStrLn --print
 
